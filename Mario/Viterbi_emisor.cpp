@@ -13,30 +13,15 @@ using namespace std;
 vector<int> codificarMensaje(const vector<int>& mensaje, int rate) {
     vector<int> mensajeCodificado;
     int state = 0;
-    cout << "Estado al iniciar: \n";
-    cout << state;
-    cout << "\n";
     for (int bit : mensaje) {
-        cout << "Bit: ";
-        cout << bit;
-        cout << "\n";
         // Calcular salidas para el bit actual.
         int salida1 = (state & 1) ^ bit;
-        cout << "Salida 1: \n";
-        cout << salida1;
-        cout << "\n";
         int salida2 = ((state >> 1) & 1) ^ bit;
-        cout << "Salida 2: \n";
-        cout << salida2; 
-        cout << "\n";
         // Añadir salidas al mensaje codificado.
         mensajeCodificado.push_back(salida1);
         mensajeCodificado.push_back(salida2);
         // Actualizar el estado.
         state = (((state << 1) | bit ) & 1);
-        cout << "State luego de añadir salidas: \n";
-        cout << state;
-        cout << "\n\n";
     }
     return mensajeCodificado;
 }
