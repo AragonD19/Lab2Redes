@@ -19,7 +19,7 @@ def decodificarMensaje(mensajeCodificado, rate):
         for state in trellis[i]:
             for bit in [0, 1]:
                 # Calcular el nuevo estado
-                new_state = ((state[0] << 1) | bit) & 3
+                new_state = (((state[0] << 1) | bit) & 1)
                 # Calcular las salidas esperadas
                 salida1 = (state[0] & 1) ^ bit
                 salida2 = ((state[0] >> 1) & 1) ^ bit
@@ -40,7 +40,7 @@ def decodificarMensaje(mensajeCodificado, rate):
 def find_corrected_bits(original, corrected):
     # Encuentra los bits corregidos comparando el mensaje original con el mensaje corregido.
     bitsCorregidos = []
-    for i in range(len(original)):
+    for i in range(len(corrected)):
         if original[i] != corrected[i]:
             bitsCorregidos.append(i)
     return bitsCorregidos
@@ -52,14 +52,10 @@ def main():
     
     # Decodificar el mensaje usando el algoritmo de Viterbi
     mensajeDecodificado = decodificarMensaje(mensajeCodificado, rate)
-
-    bitsCorregidos = find_corrected_bits(mensajeCodificado[:len(mensajeDecodificado)], mensajeDecodificado)
     
-    # Aquí podrías incluir lógica para detectar y corregir errores
-    if len(bitsCorregidos) == 0:
+    if hamming_distance(mensajeCodificado, [int(bit) for bit in ''.join(mensajeDecodificado)]) == 0:
         print("No se detectaron errores. Mensaje original:", mensajeDecodificado)
     else:
-        print("Se detectaron y corrigieron errores. Posiciones de los bits corregidos:", bitsCorregidos)
         print("Se detectaron errores. Mensaje corregido:", mensajeDecodificado)
 
 if __name__ == "__main__":
