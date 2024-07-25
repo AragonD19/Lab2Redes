@@ -1,3 +1,8 @@
+// Universidad del Valle de Guatemala
+// Redes - Sección: 10
+// David Jonthan Aragon Vasquez - Carné: 21053
+// Laboratorio 2 - Hamming
+
 #include <iostream>
 #include <vector>
 #include <string>
