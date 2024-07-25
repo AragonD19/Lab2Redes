@@ -1,3 +1,8 @@
+# Universidad del Valle de Guatemala
+# Redes - Sección: 10
+# David Jonathan Aragon Vasquez - Carné: 21053
+# Laboratorio 2 - Hamming
+
 def calculate_parity_bits(hamming_code):
     n = len(hamming_code)
     r = 0
