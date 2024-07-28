@@ -205,17 +205,15 @@ int main() {
             algoritmo = "Viterbi";
             break;
         case 3:
-            //cout << "Aun no implementado, vuelva luego!\n";
             mensajeCodificado = crc32(mensaje);
             algoritmo = "CRC-32";
-            return 1;
+            break;
         default:
             cout << "Opcion no valida\n";
             return 1;
     }
 
     vector<int> mensajeConRuido = aplicarRuido(mensajeCodificado);
-
     enviarMensaje(algoritmo, mensajeCodificado, mensajeConRuido);
 
     return 0;
