@@ -12,6 +12,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <winsock2.h>
+#include <iomanip>
+#include <sstream>
 #pragma comment(lib, "ws2_32.lib")
 
 using namespace std;
@@ -44,14 +46,17 @@ vector<int> aplicarRuido(const vector<int>& mensajeCodificado) {
     return mensajeConRuido;
 }
 
-void enviarMensaje(const vector<int>& mensajeConRuido) {
+void enviarMensaje(const vector<int>& mensajeCodificado, const vector<int>& mensajeConRuido) {
     WSADATA wsaData;
     SOCKET sock = INVALID_SOCKET;
     struct sockaddr_in serv_addr;
-    string message;
+    stringstream mensajeCodificadoStr, mensajeConRuidoStr;
 
+    for (int bit : mensajeCodificado) {
+        mensajeCodificadoStr << bit;
+    }
     for (int bit : mensajeConRuido) {
-        message += to_string(bit);
+        mensajeConRuidoStr << bit;
     }
 
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
@@ -78,9 +83,10 @@ void enviarMensaje(const vector<int>& mensajeConRuido) {
         return;
     }
 
-    // Enviar el mensaje
+    string message = mensajeCodificadoStr.str() + "|" + mensajeConRuidoStr.str();
     send(sock, message.c_str(), message.length(), 0);
     cout << "Mensaje enviado\n";
+    
 
     closesocket(sock);
     WSACleanup();
@@ -102,12 +108,34 @@ int main() {
         }
     }
 
+    int opcion;
+    cout << "Selecciona el algoritmo a utilizar:\n";
+    cout << "1. Hamming\n";
+    cout << "2. Viterbi\n";
+    cout << "3. CRC-32\n";
+    cin >> opcion;
+
+    vector<int> mensajeCodificado;
     int rate = 2; // Tasa de código 2:1
-    vector<int> mensajeCodificado = codificarMensaje(mensaje, rate);
+
+    switch (opcion) {
+        case 1:
+            cout << "Aun no implementado, vuelva luego!\n";
+            return 1;
+        case 2:
+            mensajeCodificado = codificarMensaje(mensaje, rate);
+            break;
+        case 3:
+            cout << "Aun no implementado, vuelva luego!\n";
+            return 1;
+        default:
+            cout << "Opcion no valida\n";
+            return 1;
+    }
 
     vector<int> mensajeConRuido = aplicarRuido(mensajeCodificado);
 
-    enviarMensaje(mensajeConRuido);
+    enviarMensaje(mensajeCodificado, mensajeConRuido);
 
     return 0;
 }

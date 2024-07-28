@@ -31,6 +31,10 @@ def decodificarMensaje(mensajeCodificado, rate):
     best_path = min(trellis[-1].values(), key=lambda x: x[0])[1]
     return best_path
 
+def bin_to_text(binary_string):
+    n = int(binary_string, 2)
+    return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode('utf-8', 'ignore') or '\0'
+
 def main():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(("127.0.0.1", 9090))
@@ -39,17 +43,27 @@ def main():
     while True:
         print("Esperando conexión...")
         conn, addr = server_socket.accept()
-        data = conn.recv(1024).decode()
-        print("Mensaje recibido:", data)
+        data = conn.recv(4096).decode()
+        mensajeCodificadoStr, mensajeConRuidoStr = data.split('|')
+
+        mensajeCodificado = [int(bit) for bit in mensajeCodificadoStr]
+        mensajeConRuido = [int(bit) for bit in mensajeConRuidoStr]
         
-        mensajeCodificado = [int(bit) for bit in data]
+        mensajeCodificado = [int(bit) for bit in mensajeCodificado]
+        mensajeConRuido = [int(bit) for bit in mensajeConRuido]
         rate = 2
+
+        print("Mensaje codificado recibido:", mensajeCodificado)
+
         mensajeDecodificado = decodificarMensaje(mensajeCodificado, rate)
         
-        if hamming_distance(mensajeCodificado, [int(bit) for bit in ''.join(mensajeDecodificado)]) == 0:
+        if mensajeCodificado == mensajeConRuido:
             print("No se detectaron errores. Mensaje original:", mensajeDecodificado)
         else:
             print("Se detectaron errores. Mensaje corregido:", mensajeDecodificado)
+        
+        mensajeTexto = bin_to_text(''.join(mensajeDecodificado))
+        print("Mensaje decodificado en texto:", mensajeTexto)
 
         conn.close()
 
