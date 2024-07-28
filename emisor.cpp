@@ -87,7 +87,7 @@ void enviarMensaje(const string& algoritmo, const vector<int>& mensajeCodificado
 
     // Conectar al servidor
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR) {
-        cout << "Conexión fallida: " << WSAGetLastError() << endl;
+        cout << "Conexion fallida: " << WSAGetLastError() << endl;
         closesocket(sock);
         WSACleanup();
         return;
@@ -105,6 +105,62 @@ void enviarMensaje(const string& algoritmo, const vector<int>& mensajeCodificado
 /*
 * Código para CRC-32
 */
+vector<int> crc32(const vector<int>& trama) {
+    // Polinomio en formato vector
+    vector<int> polinomio = {1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
+    const int SIZE = 32;
+
+    // Convertir la trama en un vector de enteros
+    vector<int> data = trama;
+
+    // Agregar ceros al final de la trama
+    data.insert(data.end(), SIZE, 0);
+
+    // Valores a utilizar
+    vector<int> data_calc(data.begin(), data.begin() + polinomio.size());
+    data.erase(data.begin(), data.begin() + polinomio.size());
+
+    // polinomio | data
+    while (true) {
+        // Se eliminan los bits no significativos
+        int eliminados = 0;
+
+        while (!data_calc.empty() && data_calc[0] == 0) {
+            data_calc.erase(data_calc.begin());
+            eliminados++;
+        }
+
+        // Se agregan los bits a data_calc para que sea del mismo tamaño que el polinomio
+        for (int i = 0; i < eliminados; ++i) {
+            if (data.empty()) break;
+            int bit = data[0];
+            data.erase(data.begin());
+            data_calc.push_back(bit);
+        }
+
+        // Si data_calc es menor que el polinomio, se termina el proceso
+        if (data_calc.size() < polinomio.size()) {
+            if (data.empty()) {
+                // Se agregan 0 al inicio de data_calc para que sea del mismo tamaño que el polinomio
+                data_calc.insert(data_calc.begin(), SIZE - data_calc.size(), 0);
+                break;
+            }
+        }
+
+        // Si data_calc es igual al polinomio, se hace XOR entre ambos
+        if (data_calc.size() == polinomio.size()) {
+            for (size_t i = 0; i < polinomio.size(); ++i) {
+                data_calc[i] ^= polinomio[i];
+            }
+        }
+    }
+
+    // Combinar la trama original con el CRC calculado
+    vector<int> resultado = trama;
+    resultado.insert(resultado.end(), data_calc.begin(), data_calc.end());
+
+    return resultado;
+}
 
 
 
@@ -149,8 +205,9 @@ int main() {
             algoritmo = "Viterbi";
             break;
         case 3:
-            cout << "Aun no implementado, vuelva luego!\n";
-            //algoritmo = "CRC-32";
+            //cout << "Aun no implementado, vuelva luego!\n";
+            mensajeCodificado = crc32(mensaje);
+            algoritmo = "CRC-32";
             return 1;
         default:
             cout << "Opcion no valida\n";

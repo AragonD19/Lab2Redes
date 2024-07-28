@@ -41,6 +41,9 @@ def bin_to_text(binary_string):
 
 # Código para CRC-32
 
+
+
+
 # Función Main.
 
 def main():
