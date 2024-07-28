@@ -7,6 +7,10 @@
 
 import socket
 
+# Código para Hamming.
+
+# Código para Viterbi.
+
 def hamming_distance(x, y):
     return sum(el1 != el2 for el1, el2 in zip(x, y))
 
@@ -35,6 +39,10 @@ def bin_to_text(binary_string):
     n = int(binary_string, 2)
     return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode('utf-8', 'ignore') or '\0'
 
+# Código para CRC-32
+
+# Función Main.
+
 def main():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(("127.0.0.1", 9090))
@@ -44,26 +52,33 @@ def main():
         print("Esperando conexión...")
         conn, addr = server_socket.accept()
         data = conn.recv(4096).decode()
-        mensajeCodificadoStr, mensajeConRuidoStr = data.split('|')
+        algoritmo, mensajeCodificadoStr, mensajeConRuidoStr = data.split('|')
 
-        mensajeCodificado = [int(bit) for bit in mensajeCodificadoStr]
-        mensajeConRuido = [int(bit) for bit in mensajeConRuidoStr]
-        
-        mensajeCodificado = [int(bit) for bit in mensajeCodificado]
-        mensajeConRuido = [int(bit) for bit in mensajeConRuido]
-        rate = 2
+        if algoritmo == 'Hamming':
+            break
+        if algoritmo == 'Viterbi':
 
-        print("Mensaje codificado recibido:", mensajeCodificado)
+            mensajeCodificado = [int(bit) for bit in mensajeCodificadoStr]
+            mensajeConRuido = [int(bit) for bit in mensajeConRuidoStr]
+            rate = 2
 
-        mensajeDecodificado = decodificarMensaje(mensajeCodificado, rate)
-        
-        if mensajeCodificado == mensajeConRuido:
-            print("No se detectaron errores. Mensaje original:", mensajeDecodificado)
-        else:
-            print("Se detectaron errores. Mensaje corregido:", mensajeDecodificado)
-        
-        mensajeTexto = bin_to_text(''.join(mensajeDecodificado))
-        print("Mensaje decodificado en texto:", mensajeTexto)
+            print(f"Algoritmo utilizado: {algoritmo}")
+            print("Mensaje codificado recibido.\n")
+            #print(mensajeCodificadoStr)
+
+            mensajeDecodificado = decodificarMensaje(mensajeConRuido, rate)
+            
+            if mensajeCodificado == mensajeConRuido:
+                print("No se detectaron errores. Mensaje original:\n")
+                #print(str(mensajeDecodificado))
+            else:
+                print("Se detectaron errores. Mensaje corregido:\n")
+                #print(str(mensajeDecodificado))
+            
+            mensajeTexto = bin_to_text(''.join(mensajeDecodificado))
+            print("Mensaje decodificado en texto:", mensajeTexto)
+        if algoritmo == 'CRC-32':
+            break
 
         conn.close()
 

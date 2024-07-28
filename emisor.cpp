@@ -18,6 +18,16 @@
 
 using namespace std;
 
+/*
+* Código para Hamming
+*/
+
+
+
+/*
+* Código para Viterbi
+*/
+
 // Función para codificar un binario por medio de código convolucional
 vector<int> codificarMensaje(const vector<int>& mensaje, int rate) {
     vector<int> mensajeCodificado;
@@ -46,7 +56,7 @@ vector<int> aplicarRuido(const vector<int>& mensajeCodificado) {
     return mensajeConRuido;
 }
 
-void enviarMensaje(const vector<int>& mensajeCodificado, const vector<int>& mensajeConRuido) {
+void enviarMensaje(const string& algoritmo, const vector<int>& mensajeCodificado, const vector<int>& mensajeConRuido) {
     WSADATA wsaData;
     SOCKET sock = INVALID_SOCKET;
     struct sockaddr_in serv_addr;
@@ -83,7 +93,7 @@ void enviarMensaje(const vector<int>& mensajeCodificado, const vector<int>& mens
         return;
     }
 
-    string message = mensajeCodificadoStr.str() + "|" + mensajeConRuidoStr.str();
+    string message = algoritmo + "|" + mensajeCodificadoStr.str() + "|" + mensajeConRuidoStr.str();
     send(sock, message.c_str(), message.length(), 0);
     cout << "Mensaje enviado\n";
     
@@ -92,12 +102,22 @@ void enviarMensaje(const vector<int>& mensajeCodificado, const vector<int>& mens
     WSACleanup();
 }
 
+/*
+* Código para CRC-32
+*/
+
+
+
+/*
+* Función Main.
+*/
+
 int main() {
     srand(time(0));
     
     string input;
     cout << "Introduce el mensaje en texto: ";
-    cin >> input;
+    getline(cin, input); // Usar getline para aceptar espacios
 
     // Convertir la cadena binaria a un vector de enteros.
     vector<int> mensaje;
@@ -116,17 +136,21 @@ int main() {
     cin >> opcion;
 
     vector<int> mensajeCodificado;
+    string algoritmo;
     int rate = 2; // Tasa de código 2:1
 
     switch (opcion) {
         case 1:
             cout << "Aun no implementado, vuelva luego!\n";
+            //algoritmo = "Hamming";
             return 1;
         case 2:
             mensajeCodificado = codificarMensaje(mensaje, rate);
+            algoritmo = "Viterbi";
             break;
         case 3:
             cout << "Aun no implementado, vuelva luego!\n";
+            //algoritmo = "CRC-32";
             return 1;
         default:
             cout << "Opcion no valida\n";
@@ -135,7 +159,7 @@ int main() {
 
     vector<int> mensajeConRuido = aplicarRuido(mensajeCodificado);
 
-    enviarMensaje(mensajeCodificado, mensajeConRuido);
+    enviarMensaje(algoritmo, mensajeCodificado, mensajeConRuido);
 
     return 0;
 }
