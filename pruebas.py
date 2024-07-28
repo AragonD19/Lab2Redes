@@ -35,56 +35,69 @@ def decodificarMensaje(mensajeCodificado, rate):
     best_path = min(trellis[-1].values(), key=lambda x: x[0])[1]
     return best_path
 
-def simuladorDePruebas(numeroPruebas):
-    probabilidadError = 0.01
+def simuladorDePruebas(numeroPruebas, probabilidadError):
     errores_detectados = 0
     errores_corregidos = 0
 
+    # Inicializar el receptor
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(('127.0.0.1', 9090))
+    server_socket.listen(1)
+
     for _ in range(numeroPruebas):
-        # Ejecutar el emisor con el mensaje y la probabilidad de error
-        message = 'hello'
-        subprocess.run(['emisor.exe', message, str(probabilidadError)])
+        # Ejecutar el emisor en modo de prueba automatizado
+        subprocess.run(['emisor.exe', 'test'])
         
+        # Asegurarse de esperar el tiempo necesario
         time.sleep(1)
 
-        # Recibir el mensaje en el receptor
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind(('127.0.0.1', 9090))
-        server_socket.listen(1)
-
+        # Aceptar la conexión y recibir los datos
         conn, addr = server_socket.accept()
-        data = conn.recv(1024).decode()
+        data = conn.recv(4096).decode()  # Aumentar el tamaño del buffer si es necesario
         conn.close()
-        
-        mensajeCodificado = [int(bit) for bit in data]
+
+        # Imprimir los datos recibidos para depuración
+        print("Datos recibidos:", data)
+
+        # Procesar los datos recibidos
+        try:
+            mensajeCodificado = [int(bit) for bit in data if bit in '01']  # Filtrar solo bits válidos
+        except ValueError as e:
+            print(f"Error al convertir los datos: {e}")
+            continue
+
         rate = 2
         mensajeDecodificado = decodificarMensaje(mensajeCodificado, rate)
         
         original = ''.join(mensajeDecodificado)
         if hamming_distance(mensajeCodificado, [int(bit) for bit in original]) != 0:
-            errores_detectados+= 1
+            errores_detectados += 1
             errores_corregidos += 1 if hamming_distance(message, original) == 0 else 0
 
-        server_socket.close()
-        
-    return probabilidadError, errores_detectados, errores_corregidos
+    server_socket.close()
+
+    return errores_detectados, errores_corregidos
 
 def main():
-    numeroPruebas = 10000
+    numeroPruebas = 4
+    probabilidadesError = [0.01, 0.05, 0.1]  # Lista de probabilidades de error a probar
     resultados = []
 
-    probabilidadError, errores_detectados, errores_corregidos = simuladorDePruebas(numeroPruebas)
-    resultados.append((probabilidadError, errores_detectados, errores_corregidos))
+    for probabilidadError in probabilidadesError:
+        print(f"Probabilidad de error: {probabilidadError}")
+        errores_detectados, errores_corregidos = simuladorDePruebas(numeroPruebas, probabilidadError)
+        resultados.append((probabilidadError, errores_detectados, errores_corregidos))
 
     probabilidadError, errores_detectados, errores_corregidos = zip(*resultados)
     
     plt.figure(figsize=(10, 5))
-    plt.plot(probabilidadError, errores_detectados, label='Errores detectados')
-    plt.plot(probabilidadError, errores_corregidos, label='Errores corregidos')
+    plt.plot(probabilidadError, errores_detectados, label='Errores detectados', marker='o')
+    plt.plot(probabilidadError, errores_corregidos, label='Errores corregidos', marker='o')
     plt.xlabel('Probabilidad de error')
     plt.ylabel('Número de errores')
     plt.legend()
     plt.title('Errores detectados y corregidos vs. Probabilidad de error')
+    plt.xscale('log')  # Opcional: Usa escala logarítmica si los valores de probabilidad varían ampliamente
     plt.show()
 
 if __name__ == "__main__":
