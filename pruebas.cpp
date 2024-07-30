@@ -7,7 +7,9 @@
 #include <winsock2.h>
 #include <iomanip>
 #include <sstream>
+#include <random>
 #include <unistd.h>
+#include <thread>
 #pragma comment(lib, "ws2_32.lib")// Para usleep()
 
 using namespace std;
@@ -136,6 +138,31 @@ void ejecutarReceptor() {
     // system("receptor.exe");
 }
 
+// Función para generar una palabra aleatoria
+string generarPalabraAleatoria(int longitudMin, int longitudMax) {
+    static const char alfabeto[] = "abcdefghijklmnopqrstuvwxyz";
+    static mt19937 gen(std::random_device{}());
+    uniform_int_distribution<> longitudDist(longitudMin, longitudMax);
+    uniform_int_distribution<> charDist(0, sizeof(alfabeto) - 2);
+
+    int longitud = longitudDist(gen);
+    std::string palabra;
+
+    for (int i = 0; i < longitud; ++i) {
+        palabra += alfabeto[charDist(gen)];
+    }
+
+    return palabra;
+}
+
+// Función que será ejecutada por el hilo
+void generadorDePalabras(int longitudMin, int longitudMax, int numeroPruebas, vector<string>& palabras) {
+    for (int i = 0; i < numeroPruebas; ++i) {
+        palabras.push_back(generarPalabraAleatoria(longitudMin, longitudMax));
+        usleep(500000); // Esperar 0.5 segundos entre cada generación (ajustar según sea necesario)
+    }
+}
+
 // Función principal
 int main() {
     srand(static_cast<unsigned int>(time(0)));
@@ -160,8 +187,15 @@ int main() {
     // Esperar un momento para asegurar que el receptor esté listo
     usleep(2000000); // Esperar 2 segundos (ajustar según sea necesario)
 
+    vector<string> palabras;
+    thread hiloGenerador(generadorDePalabras, 5, 10, numeroPruebas, ref(palabras));
+
     for (int i = 0; i < numeroPruebas; ++i) {
-        string input = "hello";  // Puedes ajustar el mensaje aquí o hacerlo más dinámico
+        // Esperar a que la palabra sea generada
+        while (palabras.size() <= i) {
+            usleep(100000); // Esperar 0.1 segundos
+        }
+        string input = palabras[i];
         vector<int> mensaje;
         for (char c : input) {
             bitset<8> bin(c);
@@ -193,6 +227,9 @@ int main() {
         // Esperar un momento antes de iniciar la siguiente prueba
         usleep(2000000); // Esperar 2 segundos (ajustar según sea necesario)
     }
+
+    // Esperar a que el hilo de generación de palabras termine
+    hiloGenerador.join();
 
     return 0;
 }

@@ -45,6 +45,8 @@ def crc32_receptor(trama_codificada):
     else:
         return "Se detectaron errores. El mensaje se descarta."
 
+
+
 def main():
     trama_codificada = input("Introduce la trama codificada en binario: ")
     resultado = crc32_receptor(trama_codificada)
