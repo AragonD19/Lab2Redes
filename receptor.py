@@ -6,6 +6,7 @@
 # Laboratorio 2 - Receptor
 
 import socket
+import matplotlib.pyplot as plt
 
 # Código para Hamming.
 
@@ -84,10 +85,30 @@ def crc32_receptor(trama_codificada):
     if sum(data_calc) == 0:
         # Eliminar el CRC de la trama original
         trama_original = trama_codificada[:-SIZE]
-        return "No se detectaron errores. Mensaje original: " + trama_original
+        return "No se detectaron errores. Mensaje original: " + trama_original, 0
     else:
-        return "Se detectaron errores. El mensaje se descarta."
+        return "Se detectaron errores. El mensaje se descarta.", 1
 
+
+def graficar_rendimiento_algoritmo(algoritmo, errores, no_errores):
+    # Crear figuras y ejes
+    fig, ax = plt.subplots()
+
+    # Generar barras para errores
+    ax.bar(['Errores'], errores, color='red', label='Errores')
+    # Generar barras para no errores
+    ax.bar(['No Errores'], no_errores, color='green', label='No Errores')
+
+    # Configurar títulos y etiquetas
+    ax.set_title(f'Rendimiento del Algoritmo {algoritmo}')
+    ax.set_xlabel('Tipo de Resultado')
+    ax.set_ylabel('Cantidad')
+
+    # Mostrar leyenda
+    ax.legend()
+
+    # Mostrar gráfico
+    plt.show()
 
 # Función Main.
 
@@ -96,11 +117,25 @@ def main():
     server_socket.bind(("127.0.0.1", 9090))
     server_socket.listen(1)
 
+
+    errores_crc32 = 0
+    no_errores = 0
+
     while True:
         print("Esperando conexión...")
+
+
         conn, addr = server_socket.accept()
         data = conn.recv(4096).decode()
-        algoritmo, mensajeCodificadoStr, mensajeConRuidoStr = data.split('|')
+
+        print(f"Data: {data}")
+
+        algoritmo, mensajeCodificadoStr, mensajeConRuidoStr,fin_prueba = data.split('|')
+
+        # Verificar si el mensaje es el indicador de fin de pruebas
+        if fin_prueba == "FIN_PRUEBAS":
+            print("Indicador de fin de pruebas recibido. Saliendo del bucle.")
+            break
 
         if algoritmo == 'Hamming':
             break
@@ -127,12 +162,21 @@ def main():
             print("Mensaje decodificado en texto:", mensajeTexto)
         if algoritmo == 'CRC-32':
             mensajeCodificado = [int(bit) for bit in mensajeCodificadoStr]
-            resultado = crc32_receptor(mensajeCodificadoStr)
+            resultado, errores = crc32_receptor(mensajeCodificadoStr)
+            errores_crc32 += errores
+
+            if errores == 0:
+                no_errores +=1
+
             print(f"Algoritmo utilizado: {algoritmo}")
             print("Mensaje codificado recibido.\n")
             print(resultado)
 
+    
         conn.close()
+
+    graficar_rendimiento_algoritmo(algoritmo, errores_crc32, no_errores)
+
 
 if __name__ == "__main__":
     main()

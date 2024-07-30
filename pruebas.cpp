@@ -14,6 +14,11 @@
 
 using namespace std;
 
+int numeroPruebas = 5; // Asigna el valor que prefieras aquí
+
+int numPruebaActual = 0;
+
+
 // Declaración de funciones (deberías implementar estas funciones según tu necesidad)
 vector<int> codificarMensaje(const vector<int>& mensaje, int rate);
 vector<int> crc32(const vector<int>& trama) {
@@ -121,10 +126,25 @@ void enviarMensaje(const string& algoritmo, const vector<int>& mensajeCodificado
         return;
     }
 
-    string message = algoritmo + "|" + mensajeCodificadoStr.str() + "|" + mensajeConRuidoStr.str();
-    send(sock, message.c_str(), message.length(), 0);
-    cout << "Mensaje enviado\n";
     
+
+    
+
+    // Verificar si se está enviando el último mensaje de prueba
+    if (numPruebaActual == numeroPruebas-1) {
+        string finPruebas = "FIN_PRUEBAS";
+        string message = algoritmo + "|" + mensajeCodificadoStr.str() + "|" + mensajeConRuidoStr.str() + "|" + finPruebas;
+        send(sock, message.c_str(), message.length(), 0);
+        cout << "Indicador de fin de pruebas enviado\n";
+    }else{
+        string finPruebas = "NO";
+        string message = algoritmo + "|" + mensajeCodificadoStr.str() + "|" + mensajeConRuidoStr.str() + "|" + finPruebas;
+        send(sock, message.c_str(), message.length(), 0);
+        cout << "Mensaje enviado\n";
+    }
+
+    // Incrementar el contador de pruebas enviadas
+    numPruebaActual++;
 
     closesocket(sock);
     WSACleanup();
@@ -168,16 +188,13 @@ int main() {
     srand(static_cast<unsigned int>(time(0)));
     
     int Nalgoritmo;
-    int numeroPruebas;
-
+    
     cout << "Selecciona el algoritmo a utilizar:\n";
     cout << "1. Hamming\n";
     cout << "2. Viterbi\n";
     cout << "3. CRC-32\n";
     cin >> Nalgoritmo;
 
-    cout << "Introduce el número de pruebas a ejecutar: ";
-    cin >> numeroPruebas;
 
     string algoritmo;
 
@@ -223,6 +240,8 @@ int main() {
 
         vector<int> mensajeConRuido = aplicarRuido(mensajeCodificado);
         enviarMensaje(algoritmo, mensajeCodificado, mensajeConRuido);
+
+
 
         // Esperar un momento antes de iniciar la siguiente prueba
         usleep(2000000); // Esperar 2 segundos (ajustar según sea necesario)
