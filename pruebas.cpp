@@ -14,7 +14,7 @@
 
 using namespace std;
 
-int numeroPruebas = 10; // Asigna el valor que prefieras aquí
+int numeroPruebas = 50; // Asigna el valor que prefieras aquí
 
 int numPruebaActual = 0;
 
@@ -79,7 +79,7 @@ vector<int> crc32(const vector<int>& trama) {
 }
 
 vector<int> aplicarRuido(const vector<int>& mensajeCodificado) {
-    double probabilidadError = 0.01;
+    double probabilidadError = 0.4;
     vector<int> mensajeConRuido = mensajeCodificado;
     for (int& bit : mensajeConRuido) {
         if (rand() % 100 < (probabilidadError * 100)) {
@@ -131,7 +131,7 @@ void enviarMensaje(const string& algoritmo, const vector<int>& mensajeCodificado
     
 
     // Verificar si se está enviando el último mensaje de prueba
-    if (numPruebaActual == numeroPruebas) {
+    if (numPruebaActual == numeroPruebas - 1) {
         string finPruebas = "FIN_PRUEBAS";
         string message = algoritmo + "|" + mensajeCodificadoStr.str() + "|" + mensajeConRuidoStr.str() + "|" + finPruebas;
         send(sock, message.c_str(), message.length(), 0);
