@@ -14,7 +14,7 @@
 
 using namespace std;
 
-int numeroPruebas = 5; // Asigna el valor que prefieras aquí
+int numeroPruebas = 10; // Asigna el valor que prefieras aquí
 
 int numPruebaActual = 0;
 
@@ -131,7 +131,7 @@ void enviarMensaje(const string& algoritmo, const vector<int>& mensajeCodificado
     
 
     // Verificar si se está enviando el último mensaje de prueba
-    if (numPruebaActual == numeroPruebas-1) {
+    if (numPruebaActual == numeroPruebas) {
         string finPruebas = "FIN_PRUEBAS";
         string message = algoritmo + "|" + mensajeCodificadoStr.str() + "|" + mensajeConRuidoStr.str() + "|" + finPruebas;
         send(sock, message.c_str(), message.length(), 0);

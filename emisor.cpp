@@ -93,7 +93,7 @@ void enviarMensaje(const string& algoritmo, const vector<int>& mensajeCodificado
         return;
     }
 
-    string message = algoritmo + "|" + mensajeCodificadoStr.str() + "|" + mensajeConRuidoStr.str();
+    string message = algoritmo + "|" + mensajeCodificadoStr.str() + "|" + mensajeConRuidoStr.str() + "|" + "";
     send(sock, message.c_str(), message.length(), 0);
     cout << "Mensaje enviado\n";
     
