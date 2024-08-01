@@ -142,6 +142,7 @@ def crc32_receptor(trama_codificada):
     if sum(data_calc) == 0:
         # Eliminar el CRC de la trama original
         trama_original = trama_codificada[:-SIZE]
+        trama_original = bin_to_text(trama_original)
         return "No se detectaron errores. Mensaje original: " + trama_original
     else:
         return "Se detectaron errores. El mensaje se descarta."
