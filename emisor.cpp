@@ -14,6 +14,7 @@
 #include <winsock2.h>
 #include <iomanip>
 #include <sstream>
+#include <cmath>
 #pragma comment(lib, "ws2_32.lib")
 
 using namespace std;
@@ -22,6 +23,42 @@ using namespace std;
 * Código para Hamming
 */
 
+// Función para generar el código de Hamming
+vector<int> generateHammingCode(vector<int> msg) {
+    int m = msg.size();
+    int r = 0;
+
+    // Calcular el número de bits de paridad necesarios
+    while ((m + r + 1) > static_cast<int>(pow(2, r))) {
+        r++;
+    }
+
+    vector<int> hammingCode(m + r);
+    int j = 0, k = 0;
+
+    // Colocar los bits de datos y dejar espacios para los bits de paridad
+    for (int i = 1; i <= m + r; i++) {
+        if ((i & (i - 1)) == 0) {
+            hammingCode[i - 1] = 0; // Espacio para el bit de paridad
+        } else {
+            hammingCode[i - 1] = msg[j++];
+        }
+    }
+
+    // Calcular los bits de paridad
+    for (int i = 0; i < r; i++) {
+        int parityPos = static_cast<int>(pow(2, i));
+        int parity = 0;
+        for (int j = 1; j <= m + r; j++) {
+            if (j & parityPos) {
+                parity ^= hammingCode[j - 1];
+            }
+        }
+        hammingCode[parityPos - 1] = parity;
+    }
+
+    return hammingCode;
+}
 
 
 /*
@@ -197,8 +234,8 @@ int main() {
 
     switch (opcion) {
         case 1:
-            cout << "Aun no implementado, vuelva luego!\n";
-            //algoritmo = "Hamming";
+            mensajeCodificado = generateHammingCode(mensaje);
+            algoritmo = "Hamming";
             return 1;
         case 2:
             mensajeCodificado = codificarMensaje(mensaje, rate);
