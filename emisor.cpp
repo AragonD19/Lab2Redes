@@ -236,7 +236,7 @@ int main() {
         case 1:
             mensajeCodificado = generateHammingCode(mensaje);
             algoritmo = "Hamming";
-            return 1;
+            break;
         case 2:
             mensajeCodificado = codificarMensaje(mensaje, rate);
             algoritmo = "Viterbi";
